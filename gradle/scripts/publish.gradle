@@ -1,0 +1,65 @@
+apply plugin: 'maven'
+apply plugin: 'signing'
+
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
+signing {
+    sign configurations.archives
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            pom.project {
+                name "Java implementation of D-Bus"
+                packaging 'jar'
+                // optionally artifactId can be defined here
+                description 'D-Bus is an IPC mechanism which at a low level uses message passing over Unix Sockets or IP. D-Bus models its messages as either function calls on remote objects, or signals emitted from them.'
+                url 'https://github.com/bdeneuter/dbus-java'
+
+                scm {
+                    connection 'scm:git:https://github.com/bdeneuter/dbus-java.git'
+                    developerConnection 'scm:git:https://github.com/bdeneuter/dbus-java.git'
+                    url 'https://github.com/bdeneuter/dbus-java.git'
+                }
+
+                licenses {
+                    license {
+                        name 'GNU Lesser/Library General Public License version 2'
+                        url 'https://www.gnu.org/licenses/lgpl.html'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'bart'
+                        name 'Bart De Neuter'
+                        email 'bdeneuter@gmail.com'
+                    }
+                }
+            }
+        }
+    }
+}
